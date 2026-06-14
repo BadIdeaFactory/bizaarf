@@ -40,9 +40,13 @@ jobs:
 
       - name: Build
         # base_path is the sub-path Pages serves the site from (e.g. /bizaarf/).
+        # The VITE_NEON_* values are public (security is via JWT + RLS), so they
+        # come from repo Variables rather than Secrets.
         run: npm run build
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          VITE_NEON_AUTH_URL: ${{ vars.VITE_NEON_AUTH_URL }}
+          VITE_NEON_DATA_API_URL: ${{ vars.VITE_NEON_DATA_API_URL }}
 
       - name: Provide an SPA fallback
         run: cp dist/index.html dist/404.html
