@@ -10,9 +10,12 @@ symlink to this file.
 various stages (idea → prototype → active → archived) from the BIF community.
 
 The frontend is a static [Svelte](https://svelte.dev) single-page app built with
-[Vite](https://vite.dev) and deployed to GitHub Pages. A backend using
-[Neon](https://neon.tech) is planned but not yet present; it will be added in a
-later commit.
+[Vite](https://vite.dev) and deployed to GitHub Pages. Accounts, login, and user
+management are backed by [Neon](https://neon.tech) — **Neon Auth** for
+authentication and the **Neon Data API** for data — reached directly from the
+browser (no server of our own; auth-z is enforced by JWT + RLS). See
+[`docs/`](./docs) for the architecture, user tiers, and database notes. The
+project-listing backend is still to come.
 
 ## Tech stack
 
@@ -31,10 +34,16 @@ later commit.
 ├── index.html              # Vite entry document
 ├── src/
 │   ├── main.ts             # App bootstrap (mounts App.svelte onto #app)
-│   ├── App.svelte          # Root component (placeholder landing page)
+│   ├── App.svelte          # Root shell: header + hash router
 │   ├── app.css             # Global styles
-│   ├── vite-env.d.ts       # Ambient types
+│   ├── vite-env.d.ts       # Ambient types (incl. import.meta.env)
 │   └── lib/                # Framework-agnostic TS modules + their *.test.ts
+│       ├── client.ts       # The Neon client (auth + Data API)
+│       ├── database.types.ts # Hand-maintained Data API row types
+│       └── components/     # Svelte views (auth forms, admin, guard)
+├── db/migrations/          # Hand-applied SQL migrations
+├── docs/                   # Architecture, user tiers, database, GitHub setup
+├── .env.example            # Public Neon URLs + (secret) DATABASE_URL template
 ├── vite.config.ts          # Vite + Vitest config
 ├── svelte.config.js        # Svelte preprocess config
 ├── eslint.config.mjs       # Flat ESLint config
@@ -83,6 +92,12 @@ These mirror the house style used across BIF/PDC projects
 - **Tests** live next to the code they cover as `*.test.ts` and import from
   `vitest` explicitly. Test files relax the magic-number and non-null-assertion
   rules.
+- **Prefer self-documenting code over comments.** Reach for clear names and small
+  functions first. Reserve comments for _why_ (non-obvious rationale, a
+  workaround, a gotcha) — not _what_ the code already states, since those rot.
+- **Lasting documentation lives in `docs/`,** not in long code-comment blocks.
+  Design rationale, architecture, and how-tos belong there; reference `docs/`
+  from code only when it genuinely helps.
 
 ## Deployment & the Pages base path
 
@@ -95,8 +110,9 @@ default to `/`.
 **If a custom domain (e.g. via a `CNAME`) is ever configured, set `base` back to
 `/`** — assets paths will otherwise point at the wrong place.
 
-The deploy workflow also copies `index.html` to `404.html` so deep links keep
-working once client-side routing is added.
+The deploy workflow also copies `index.html` to `404.html` for SPA deep links.
+Routing is currently hash-based (`svelte-spa-router`), which doesn't rely on that
+fallback, but it stays in place in case path-based routing is adopted later.
 
 ## Dependencies
 

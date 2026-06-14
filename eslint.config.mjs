@@ -6,8 +6,8 @@ import globals from 'globals';
 
 export default tseslint.config(
 	{
-		// Build output and dependencies are never linted.
-		ignores: ['dist/', 'coverage/', 'node_modules/'],
+		// Build output, caches and dependencies are never linted.
+		ignores: ['dist/', 'coverage/', 'node_modules/', '.vite/'],
 	},
 	js.configs.recommended,
 
